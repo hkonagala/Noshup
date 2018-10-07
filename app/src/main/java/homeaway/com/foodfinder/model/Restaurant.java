@@ -1,43 +1,62 @@
 package homeaway.com.foodfinder.model;
 
+import android.graphics.drawable.Icon;
+
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Restaurant {
 
+    @SerializedName("id")
+    @Expose
+    private String id;
+
     @SerializedName("name")
+    @Expose
     private String restaurantName;
 
     @SerializedName("shortName")
+    @Expose
     private String category;
 
     @SerializedName("icon")
-    private String thumbnailUrl;
+    @Expose
+    private Icon thumbnail;
 
     @SerializedName("formattedPhone")
+    @Expose
     private String contact;
 
     @SerializedName("hasMenu")
+    @Expose
     private boolean hasMenu;
 
-    @SerializedName("menuUrl")
-    private String menuUrl;
-
-    @SerializedName("websiteUrl")
-    private String websiteUrl;
+    @SerializedName("url")
+    @Expose
+    private String website;
 
     @SerializedName("location")
+    @Expose
     private Location location;
 
 
-    public Restaurant(String restaurantName, String category, String thumbnailUrl, String contact, boolean hasMenu, String menuUrl, String websiteUrl, Location location) {
+    public Restaurant(String id, String restaurantName, String category, Icon thumbnail, String contact, boolean hasMenu, String website, Location location) {
+        this.id = id;
         this.restaurantName = restaurantName;
         this.category = category;
-        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnail = thumbnail;
         this.contact = contact;
         this.hasMenu = hasMenu;
-        this.menuUrl = menuUrl;
-        this.websiteUrl = websiteUrl;
+        this.website = website;
         this.location = location;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getRestaurantName() {
@@ -56,12 +75,12 @@ public class Restaurant {
         this.category = category;
     }
 
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
+    public Icon getThumbnail() {
+        return thumbnail;
     }
 
-    public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
+    public void setThumbnail(Icon thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public String getContact() {
@@ -80,20 +99,12 @@ public class Restaurant {
         this.hasMenu = hasMenu;
     }
 
-    public String getMenuUrl() {
-        return menuUrl;
+    public String getWebsite() {
+        return website;
     }
 
-    public void setMenuUrl(String menuUrl) {
-        this.menuUrl = menuUrl;
-    }
-
-    public String getWebsiteUrl() {
-        return websiteUrl;
-    }
-
-    public void setWebsiteUrl(String websiteUrl) {
-        this.websiteUrl = websiteUrl;
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     public Location getLocation() {

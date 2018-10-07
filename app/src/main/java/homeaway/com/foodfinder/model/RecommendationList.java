@@ -4,23 +4,22 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class RecommendationList {
 
-    @SerializedName("venues")
+    @SerializedName("items")
     @Expose
-    private List<Recommendation> recommendations;
+    private ArrayList<Recommendation> recommendations = null;
 
-    public RecommendationList(List<Recommendation> recommendations) {
+    public RecommendationList(ArrayList<Recommendation> recommendations) {
         this.recommendations = recommendations;
     }
 
-    public List<Recommendation> getRecommendations() {
+    public ArrayList<Recommendation> getRecommendations() {
         return recommendations;
     }
 
-    public void setRecommendations(List<Recommendation> recommendations) {
+    public void setRecommendations(ArrayList<Recommendation> recommendations) {
         this.recommendations = recommendations;
     }
 }

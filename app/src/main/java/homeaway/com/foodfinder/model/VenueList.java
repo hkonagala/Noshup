@@ -3,23 +3,24 @@ package homeaway.com.foodfinder.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VenueList {
 
     @SerializedName("venues")
     @Expose
-    private List<Restaurant> venues;
+    private ArrayList<Restaurant> venues = null;
 
-    public VenueList(List<Restaurant> venues) {
+    public VenueList(ArrayList<Restaurant> venues) {
         this.venues = venues;
     }
 
-    public List<Restaurant> getVenues() {
+    public ArrayList<Restaurant> getVenues() {
         return venues;
     }
 
-    public void setVenues(List<Restaurant> venues) {
+    public void setVenues(ArrayList<Restaurant> venues) {
         this.venues = venues;
     }
 }

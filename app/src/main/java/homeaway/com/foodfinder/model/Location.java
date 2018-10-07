@@ -1,19 +1,22 @@
 package homeaway.com.foodfinder.model;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Location {
 
     @SerializedName("lat")
+    @Expose
     private double lat;
 
     @SerializedName("lng")
+    @Expose
     private double lng;
 
     @SerializedName("formattedAddress")
+    @Expose
     private String address;
 
-    @SerializedName("distance")
     private int distance;
 
     public Location(double lat, double lng, String address, int distance) {
