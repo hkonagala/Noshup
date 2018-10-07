@@ -14,7 +14,7 @@ public interface FourSquareService {
     // "https://api.foursquare.com/v2/venues/search?client_id=" + CLIENT_ID +
     // "&client_secret=" + CLIENT_SECRET + "&near=Seattle,+WA&query=restaurants&v=20181006";
     @GET("venues/search?near=Seattle,+WA&query=restaurants&v=20181010")
-    Call<VenueList> searchRestaurants (
+    Call<VenueList> searchVenues (
             @Query("client_id") String clientID,
             @Query("client_secret") String clientSecret
     );

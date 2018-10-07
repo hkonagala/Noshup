@@ -20,11 +20,11 @@ local.properties
 
 # Android Studio
 *.iml
-.idea
+*.idea
 .idea/workspace.xml
-.gradle
+*.gradle
 build/
-.navigation
+*.navigation
 captures/
 output.json
 .idea/libraries

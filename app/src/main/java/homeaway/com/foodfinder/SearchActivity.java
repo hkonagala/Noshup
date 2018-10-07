@@ -15,7 +15,9 @@ import com.arlib.floatingsearchview.FloatingSearchView;
 import java.util.List;
 
 import homeaway.com.foodfinder.adapter.SearchAdapter;
-import homeaway.com.foodfinder.model.Restaurant;
+import homeaway.com.foodfinder.model.Recommendation;
+import homeaway.com.foodfinder.model.RecommendationList;
+import homeaway.com.foodfinder.model.Venue;
 import homeaway.com.foodfinder.model.VenueList;
 import homeaway.com.foodfinder.network.FourSquareService;
 import homeaway.com.foodfinder.network.RetrofitClientInstance;
@@ -29,11 +31,13 @@ public class SearchActivity extends AppCompatActivity {
 
     FloatingSearchView searchView;
     RecyclerView restaurantsList;
-    private List<Restaurant> venueList;
+    private List<Venue> venueList;
+    private List<Recommendation> recommendationList;
     SearchAdapter searchAdapter;
     RecyclerView.LayoutManager layoutManager;
     Retrofit retrofitClientInstance;
     private ProgressDialog pDialog;
+    String userSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,8 @@ public class SearchActivity extends AppCompatActivity {
 
         searchView = findViewById(R.id.floating_search_view);
         restaurantsList = findViewById(R.id.search_rv);
+
+//        DisplayRestaurants();
 
     }
 
@@ -53,6 +59,8 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onSearchTextChanged(String oldQuery, String newQuery) {
                 //do something
+                userSearch = newQuery;
+                Toast.makeText(getApplicationContext(), userSearch, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -93,7 +101,7 @@ public class SearchActivity extends AppCompatActivity {
 
 
         // Calls the Foursquare API to display venues from seattle
-        Call<VenueList> displayVenuesCall = foursquare.searchRestaurants (
+        Call<VenueList> displayVenuesCall = foursquare.searchVenues (
                 Constant.FOURSQUARE_CLIENT_ID,
                 Constant.FOURSQUARE_CLIENT_SECRET
                 );
@@ -105,7 +113,7 @@ public class SearchActivity extends AppCompatActivity {
                 //Dismiss Dialog
                 pDialog.dismiss();
 
-                if(response.isSuccessful()){
+                if(response.isSuccessful()) {
                     // Gets the venue object from the JSON response
                     if (response.body() != null) {
                         try{
@@ -134,6 +142,40 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void DisplayRecommendations(){
+
+        FourSquareService foursquare = getFourSquareService();
+
+        Call<RecommendationList> displayRecCall = foursquare.SearchRecommendations(
+                Constant.FOURSQUARE_CLIENT_ID,
+                Constant.FOURSQUARE_CLIENT_SECRET,
+                userSearch
+        );
+
+        displayRecCall.enqueue(new Callback<RecommendationList>() {
+            @Override
+            public void onResponse(Call<RecommendationList> call, Response<RecommendationList> response) {
+
+                if(response.isSuccessful()) {
+                    // Gets the recommendation object from the JSON response
+                    if (response.body() != null) {
+                        if (response.body() != null) {
+                            recommendationList = response.body().getRecommendations();
+                            //TODO
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RecommendationList> call, Throwable t) {
+                Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
     }
 
 

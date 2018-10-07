@@ -5,7 +5,7 @@ import android.graphics.drawable.Icon;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Restaurant {
+public class Venue {
 
     @SerializedName("id")
     @Expose
@@ -40,7 +40,7 @@ public class Restaurant {
     private Location location;
 
 
-    public Restaurant(String id, String restaurantName, String category, Icon thumbnail, String contact, boolean hasMenu, String website, Location location) {
+    public Venue(String id, String restaurantName, String category, Icon thumbnail, String contact, boolean hasMenu, String website, Location location) {
         this.id = id;
         this.restaurantName = restaurantName;
         this.category = category;

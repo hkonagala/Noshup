@@ -2,7 +2,6 @@ package homeaway.com.foodfinder.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -17,8 +16,7 @@ import com.airbnb.lottie.LottieAnimationView;
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
-import homeaway.com.foodfinder.model.Restaurant;
-import homeaway.com.foodfinder.model.VenueList;
+import homeaway.com.foodfinder.model.Venue;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
@@ -26,9 +24,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     private Context context;
 
     // The list of restaurant results from the Foursquare API
-    private List<Restaurant> venueList;
+    private List<Venue> venueList;
 
-    public SearchAdapter(Context context, List<Restaurant> venueList) {
+    public SearchAdapter(Context context, List<Venue> venueList) {
         this.context = context;
         this.venueList = venueList;
     }
@@ -45,7 +43,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         // Sets each view with the appropriate venue details
-        Restaurant venue = venueList.get(position);
+        Venue venue = venueList.get(position);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             holder.icon.setImageIcon(venue.getThumbnail());

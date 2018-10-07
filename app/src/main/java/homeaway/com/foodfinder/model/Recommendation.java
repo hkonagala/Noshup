@@ -7,7 +7,7 @@ public class Recommendation {
 
     @SerializedName("venues")
     @Expose
-    private Restaurant restaurant;
+    private Venue venue;
 
     @SerializedName("rating")
     @Expose
@@ -17,18 +17,18 @@ public class Recommendation {
     @Expose
     private boolean isOpen;
 
-    public Recommendation(Restaurant restaurant, double rating, boolean isOpen) {
-        this.restaurant = restaurant;
+    public Recommendation(Venue venue, double rating, boolean isOpen) {
+        this.venue = venue;
         this.rating = rating;
         this.isOpen = isOpen;
     }
 
-    public Restaurant getRestaurant() {
-        return restaurant;
+    public Venue getVenue() {
+        return venue;
     }
 
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
+    public void setVenue(Venue venue) {
+        this.venue = venue;
     }
 
     public double getRating() {
