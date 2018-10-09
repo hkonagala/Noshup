@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".SearchActivity">
-
 
     <com.arlib.floatingsearchview.FloatingSearchView
         android:id="@+id/floating_search_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-        app:floatingSearch_searchHint="@string/search_restaurants"
-        app:floatingSearch_suggestionsListAnimDuration="250"
-        app:floatingSearch_showSearchKey="true"
-        app:floatingSearch_leftActionMode="showSearch"
         style="@style/SearchView"
-        app:floatingSearch_close_search_on_keyboard_dismiss="true">
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        app:floatingSearch_close_search_on_keyboard_dismiss="true"
+        app:floatingSearch_leftActionMode="showSearch"
+        app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
+        app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
+        app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
+        app:floatingSearch_searchHint="@string/search_restaurants"
+        app:floatingSearch_showSearchKey="true"
+        app:floatingSearch_dimBackground="false"
+        app:floatingSearch_backgroundColor="@color/white"
+        app:floatingSearch_suggestionsListAnimDuration="250">
 
     </com.arlib.floatingsearchview.FloatingSearchView>
 
@@ -28,6 +30,16 @@
         android:id="@+id/search_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toBottomOf="@id/floating_search_view"/>
+        android:layout_below="@id/floating_search_view"/>
 
-</android.support.constraint.ConstraintLayout>
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/emptyView_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_fileName="network_lost.json"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:layout_below="@id/floating_search_view"
+        android:visibility="gone" />
+
+</RelativeLayout>

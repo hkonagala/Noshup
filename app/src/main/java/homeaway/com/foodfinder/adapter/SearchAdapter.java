@@ -1,7 +1,9 @@
 package homeaway.com.foodfinder.adapter;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -12,30 +14,33 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
-import homeaway.com.foodfinder.model.Venue;
+import homeaway.com.foodfinder.activity.DetailsActivity;
+import homeaway.com.foodfinder.model.venueModel.Venue;
+import homeaway.com.foodfinder.model.venueModel.Response;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
     // The application context for getting resources
     private Context context;
 
-    // The list of restaurant results from the Foursquare API
-    private List<Venue> venueList;
+    // The list of results from the Foursquare API
+    private Response results;
 
-    public SearchAdapter(Context context, List<Venue> venueList) {
+    public SearchAdapter(Context context, Response results) {
         this.context = context;
-        this.venueList = venueList;
+        this.results = results;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item, parent, false);
-        return new ViewHolder(v);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item, parent, false);
+        return new ViewHolder(view);
     }
 
     @SuppressLint("SetTextI18n")
@@ -43,16 +48,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
         // Sets each view with the appropriate venue details
-        Venue venue = venueList.get(position);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            holder.icon.setImageIcon(venue.getThumbnail());
+        Venue venue = results.getVenues().get(position);
+        //load image with picasso
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Picasso.with(context).load(String.valueOf(venue.getCategories().get(0).getIcon()))
+                    .error(context.getDrawable(R.drawable.ic_error_black_24dp))
+                    .into(holder.icon);
         }
-        holder.name.setText(venue.getRestaurantName());
-        holder.category.setText(venue.getCategory());
+        holder.name.setText(venue.getName());
+        holder.category.setText(venue.getCategories().get(0).getShortName());
         holder.distance.setText((venue.getLocation().getDistance()) + context.getString(R.string.miles));
 
-        // Stores additional venue details for the map view
+        //additional venue details for the map
         holder.id = venue.getId();
         holder.latitude = venue.getLocation().getLat();
         holder.longitude = venue.getLocation().getLng();
@@ -60,17 +67,24 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     @Override
     public int getItemCount() {
-        return venueList.size();
+        List<Venue> venues = results.getVenues();
+        if (venues != null) {
+            return venues.size();
+        } else {
+            return 0;
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        // The restaurant fields to display
+        // The venue fields to display
         ImageView icon;
         TextView name;
         TextView category;
         TextView distance;
         LottieAnimationView animationView;
+
+        //details for map
         String id;
         double latitude;
         double longitude;
@@ -85,14 +99,47 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
             name = itemView.findViewById(R.id.search_name);
             category = itemView.findViewById(R.id.search_category);
             distance = itemView.findViewById(R.id.search_distance);
-            //TODO
             animationView = itemView.findViewById(R.id.lottieAnimationView);
+            animationView.setOnClickListener(this);
 
         }
 
         @Override
         public void onClick(View view) {
-            //do something
+
+            int id = view.getId();
+
+            if(id == R.id.search_item_container) {
+                //intent to redirect the user to a details page with map
+                Context context = name.getContext();
+                Intent i = new Intent(context, DetailsActivity.class);
+
+                // Passes the extra venue details onto the map
+                i.putExtra("name", name.getText());
+                i.putExtra("ID", id);
+                i.putExtra("latitude", latitude);
+                i.putExtra("longitude", longitude);
+                context.startActivity(i);
+            } else if(id == R.id.lottieAnimationView) {
+                startBookmarkAnimation();
+            }
+
+        }
+
+        private void startBookmarkAnimation() {
+            ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f).setDuration(500);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                    animationView.setProgress((Float) valueAnimator.getAnimatedValue());
+                }
+            });
+
+            if (animationView.getProgress() == 0f) {
+                animator.start();
+            } else {
+                animationView.setProgress(0f);
+            }
         }
     }
 }

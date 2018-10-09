@@ -1,42 +1,45 @@
 package homeaway.com.foodfinder;
 
 import android.app.ProgressDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
-
+import com.airbnb.lottie.LottieAnimationView;
 import com.arlib.floatingsearchview.FloatingSearchView;
 
-
-import java.util.List;
-
 import homeaway.com.foodfinder.adapter.SearchAdapter;
-import homeaway.com.foodfinder.model.Recommendation;
-import homeaway.com.foodfinder.model.RecommendationList;
-import homeaway.com.foodfinder.model.Venue;
-import homeaway.com.foodfinder.model.VenueList;
+import homeaway.com.foodfinder.model.venueModel.Response;
+import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import homeaway.com.foodfinder.network.FourSquareService;
 import homeaway.com.foodfinder.network.RetrofitClientInstance;
-import homeaway.com.foodfinder.util.Constant;
+import homeaway.com.foodfinder.util.Config;
+import homeaway.com.foodfinder.util.DateUtil;
+import io.reactivex.disposables.CompositeDisposable;
 import retrofit2.Call;
 import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class SearchActivity extends AppCompatActivity {
 
     FloatingSearchView searchView;
-    RecyclerView restaurantsList;
-    private List<Venue> venueList;
-    private List<Recommendation> recommendationList;
+
+    RecyclerView recyclerView;
     SearchAdapter searchAdapter;
     RecyclerView.LayoutManager layoutManager;
+
+    LottieAnimationView emptyView;
+
     Retrofit retrofitClientInstance;
+    private CompositeDisposable disposable;
+
     private ProgressDialog pDialog;
+
     String userSearch;
 
     @Override
@@ -45,23 +48,26 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
 
         searchView = findViewById(R.id.floating_search_view);
-        restaurantsList = findViewById(R.id.search_rv);
+        recyclerView = findViewById(R.id.search_rv);
+        emptyView = findViewById(R.id.emptyView_rv);
 
-//        DisplayRestaurants();
+        layoutManager = new LinearLayoutManager(getApplicationContext());
+        recyclerView.setLayoutManager(layoutManager);
+        //recyclerView.setHasFixedSize(true);
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        disposable = new CompositeDisposable();
+        displayVenues();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        searchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-            @Override
-            public void onSearchTextChanged(String oldQuery, String newQuery) {
-                //do something
-                userSearch = newQuery;
-                Toast.makeText(getApplicationContext(), userSearch, Toast.LENGTH_LONG).show();
-            }
+        searchView.setOnQueryChangeListener((oldQuery, newQuery) -> {
+            userSearch = newQuery;
+//            displayRecommendations();
+//            Toast.makeText(getApplicationContext(), userSearch, Toast.LENGTH_LONG).show();
         });
 
         searchView.setOnLeftMenuClickListener(new FloatingSearchView.OnLeftMenuClickListener() {
@@ -82,6 +88,16 @@ public class SearchActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        //dispose subscriptions
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
+        }
+
+        super.onDestroy();
+    }
+
     private FourSquareService getFourSquareService() {
 
         // Builds Retrofit and FoursquareService objects for calling the Foursquare API and parsing with GSON
@@ -89,7 +105,7 @@ public class SearchActivity extends AppCompatActivity {
         return retrofitClientInstance.create(FourSquareService.class);
     }
 
-    public void DisplayRestaurants() {
+    public void displayVenues() {
 
         pDialog = new ProgressDialog(this);
         pDialog.setMessage(getString(R.string.loading_message));
@@ -97,86 +113,112 @@ public class SearchActivity extends AppCompatActivity {
         pDialog.setCancelable(false);
         pDialog.show();
 
+        // Call the Foursquare API to display venues from seattle
         FourSquareService foursquare = getFourSquareService();
 
-
-        // Calls the Foursquare API to display venues from seattle
-        Call<VenueList> displayVenuesCall = foursquare.searchVenues (
-                Constant.FOURSQUARE_CLIENT_ID,
-                Constant.FOURSQUARE_CLIENT_SECRET
-                );
-
-        displayVenuesCall.enqueue(new Callback<VenueList>() {
-            @Override
-            public void onResponse(Call<VenueList> call, Response<VenueList> response) {
-
-                //Dismiss Dialog
-                pDialog.dismiss();
-
-                if(response.isSuccessful()) {
-                    // Gets the venue object from the JSON response
-                    if (response.body() != null) {
-                        try{
-                            venueList = response.body().getVenues();
-                        }catch (NullPointerException e){
-                            e.printStackTrace();
-                        }
-
-                        // Displays the results in the RecyclerView
-                        searchAdapter = new SearchAdapter(getApplicationContext(), venueList);
-                        layoutManager = new LinearLayoutManager(getApplicationContext());
-                        restaurantsList.setLayoutManager(layoutManager);
-                        restaurantsList.setHasFixedSize(true);
-                        restaurantsList.setItemAnimator(new DefaultItemAnimator());
-                        restaurantsList.setAdapter(searchAdapter);
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<VenueList> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
-                finish();
-            }
-        });
-
-    }
-
-    public void DisplayRecommendations(){
-
-        FourSquareService foursquare = getFourSquareService();
-
-        Call<RecommendationList> displayRecCall = foursquare.SearchRecommendations(
-                Constant.FOURSQUARE_CLIENT_ID,
-                Constant.FOURSQUARE_CLIENT_SECRET,
-                userSearch
+        Log.i("Harika", "Client Id: [" + Config.FOURSQUARE_CLIENT_ID + "], "
+                + "Client Secret: [" + Config.FOURSQUARE_CLIENT_SECRET + "], "
+                + "Date: [" + DateUtil.getTodaysDate() + "], "
+                + "place: [ " + Config.PLACE + "], "
+                + "Query: [" + Config.QUERY + "]"
         );
 
-        displayRecCall.enqueue(new Callback<RecommendationList>() {
+        Call<VenueResponse> displayVenuesCall = foursquare.searchVenues(
+                Config.FOURSQUARE_CLIENT_ID,
+                Config.FOURSQUARE_CLIENT_SECRET,
+                DateUtil.getTodaysDate(),
+                Config.PLACE,
+                Config.QUERY
+        );
+
+        displayVenuesCall.enqueue(new Callback<VenueResponse>() {
             @Override
-            public void onResponse(Call<RecommendationList> call, Response<RecommendationList> response) {
-
-                if(response.isSuccessful()) {
-                    // Gets the recommendation object from the JSON response
-                    if (response.body() != null) {
-                        if (response.body() != null) {
-                            recommendationList = response.body().getRecommendations();
-                            //TODO
-                        }
-                    }
-
-                }
+            public void onResponse(Call<VenueResponse> call, retrofit2.Response<VenueResponse> response) {
+                handleResults(response.body().getResponse());
             }
 
             @Override
-            public void onFailure(Call<RecommendationList> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
-                finish();
+            public void onFailure(Call<VenueResponse> call, Throwable t) {
+                handleError(t);
             }
         });
+
+
+//        try {
+//            Response venueList = displayVenuesCall.execute().body();
+//            handleResults(venueList);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+//        displayVenuesCall.enqueue(new Callback<Response>() {
+//            @Override
+//            public void onResponse(@NonNull Call<Response> call, @NonNull Response<Response> response) {
+//                handleResults(response.body());
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Response> call, Throwable t) {
+//                handleError(t);
+//            }
+//        });
+
+//        disposable.add(
+//        Response venueList = foursquare.searchVenues(
+//                Config.FOURSQUARE_CLIENT_ID,
+//                Config.FOURSQUARE_CLIENT_SECRET,
+//                DateUtil.getTodaysDate(),
+//                Config.PLACE,
+//                Config.QUERY)
+//                .subscribeOn(Schedulers.io()) //observable does work in a background thread
+//                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
+//                .blockingFirst();
+//        //.subscribe(this::handleResults, this::handleError)
+////        );
+//        handleResults(venueList);
     }
 
+    private void handleResults(Response response) {
+        Log.i("Phani", "handleResults: [Results]" + response.getVenues());
+        pDialog.dismiss();
+
+//        if(response.getVenues() != null) {
+            searchAdapter = new SearchAdapter(getApplicationContext(), response);
+            recyclerView.setAdapter(searchAdapter);
+//        } else {
+//            Toast.makeText(getApplicationContext(), getString(R.string.app_name), Toast.LENGTH_LONG).show();
+//        }
+    }
+
+    private void handleError(Throwable throwable) {
+        pDialog.dismiss();
+        Log.e("Observer", ""+ throwable.toString());
+        emptyView.setVisibility(View.VISIBLE);
+        emptyView.playAnimation();
+        Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
+    }
+
+//    public void displayRecommendations() {
+//
+//        FourSquareService foursquare = getFourSquareService();
+//        disposables.add(foursquare.SearchRecommendations (
+//                Config.FOURSQUARE_CLIENT_ID,
+//                Config.FOURSQUARE_CLIENT_SECRET,
+//                DateUtil.getTodaysDate(),
+//                Config.PLACE,
+//                userSearch,
+//                Config.LIMIT)
+//                .subscribeOn(Schedulers.newThread()) //work in background thread
+//                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
+//                .subscribe(this::handleSearchResults, this::handleError));
+//
+//    }
+//
+//    private void handleSearchResults(Response venueList) {
+//
+//        if(venueList.getVenues() != null) {
+//            //TODO create another listview for search suggestions
+//        }
+//    }
 
 }
