@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
-import homeaway.com.foodfinder.model.venueModel.Response;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 import homeaway.com.foodfinder.util.BookmarkPreferences;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;

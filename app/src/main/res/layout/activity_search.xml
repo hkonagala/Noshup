@@ -1,58 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
+    android:fitsSystemWindows="true"
     tools:context=".SearchActivity">
 
-    <com.arlib.floatingsearchview.FloatingSearchView
-        android:id="@+id/floating_search_view"
-        style="@style/SearchView"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        app:floatingSearch_close_search_on_keyboard_dismiss="true"
-        app:floatingSearch_leftActionMode="showSearch"
-        app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-        app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-        app:floatingSearch_searchHint="@string/search_restaurants"
-        app:floatingSearch_showSearchKey="true"
-        app:floatingSearch_dimBackground="false"
-        app:floatingSearch_backgroundColor="@color/white"
-        app:floatingSearch_suggestionsListAnimDuration="250">
-
-    </com.arlib.floatingsearchview.FloatingSearchView>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/search_rv"
+    <LinearLayout
+        android:id="@+id/searchview_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/floating_search_view"/>
+        android:orientation="vertical">
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/emptyView_rv"
+        <com.arlib.floatingsearchview.FloatingSearchView
+            android:id="@+id/floating_search_view"
+            style="@style/SearchView"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            app:floatingSearch_close_search_on_keyboard_dismiss="true"
+            app:floatingSearch_leftActionMode="showSearch"
+            app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
+            app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
+            app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
+            app:floatingSearch_searchHint="@string/search_restaurants"
+            app:floatingSearch_showSearchKey="true"
+            app:floatingSearch_dimBackground="false"
+            app:floatingSearch_backgroundColor="@color/white"
+            app:floatingSearch_suggestionsListAnimDuration="250" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/search_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/empty_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:lottie_fileName="network_lost.json"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        android:layout_below="@id/floating_search_view"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <Button
-        android:id="@+id/error_btn_retry"
-        android:background="@color/transparent"
-        android:textSize="@dimen/activity_margin_content"
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/emptyView_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:lottie_fileName="network_lost.json"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"/>
+
+        <Button
+            android:id="@+id/error_btn_retry"
+            android:background="@color/transparent"
+            android:textSize="@dimen/activity_margin_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_margin_bottom"
+            android:text="@string/btn_retry"
+            android:textColor="@color/colorPrimary"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
+
+    </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/search_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_margin_bottom"
-        android:text="@string/btn_retry"
-        android:textColor="@color/colorPrimary"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
+        android:foregroundGravity="bottom"
+        android:layout_margin="@dimen/activity_margin"
+        android:layout_gravity="bottom|end"
+        android:src="@drawable/ic_place_black_24dp"
+        app:fabSize="auto"/>
 
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -2,8 +2,11 @@ package homeaway.com.foodfinder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
@@ -41,6 +45,7 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
     SearchAdapter searchAdapter;
     LinearLayoutManager layoutManager;
 
+    RelativeLayout emptyContainer;
     LottieAnimationView emptyView;
 
     Retrofit retrofitClientInstance;
@@ -61,6 +66,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
     private int currentPage = PAGE_START;
     Button retryButton;
 
+    //floating action button
+    FloatingActionButton fab;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,8 +79,14 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
 
         searchView = findViewById(R.id.floating_search_view);
         recyclerView = findViewById(R.id.search_rv);
+        emptyContainer = findViewById(R.id.empty_container);
         emptyView = findViewById(R.id.emptyView_rv);
         retryButton = findViewById(R.id.error_btn_retry);
+        fab = findViewById(R.id.search_fab);
+        //handling fab scroll behavior
+//        CoordinatorLayout.LayoutParams p = (CoordinatorLayout.LayoutParams) fab.getLayoutParams();
+//        p.setBehavior(new ScrollAwareFABBehavior(this, null));
+//        fab.setLayoutParams(p);
 
         layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
@@ -82,11 +96,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         disposable = new CompositeDisposable();
         displayVenues();
 
-        retryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loadFirstPage(getFourSquareService());
-            }
+        retryButton.setOnClickListener(view -> loadFirstPage(getFourSquareService()));
+        fab.setOnClickListener(view -> {
+            //go to maps activity
         });
     }
 
@@ -245,9 +257,10 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
     private void handleError(Throwable throwable) {
         pDialog.dismiss();
         Log.e("Observer", ""+ throwable.toString());
-        emptyView.setVisibility(View.VISIBLE);
+        emptyContainer.setVisibility(View.VISIBLE);
+//        emptyView.setVisibility(View.VISIBLE);
         emptyView.playAnimation();
-        retryButton.setVisibility(View.VISIBLE);
+//        retryButton.setVisibility(View.VISIBLE);
         Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
     }
 
