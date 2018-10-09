@@ -42,4 +42,17 @@
         android:layout_below="@id/floating_search_view"
         android:visibility="gone" />
 
+    <Button
+        android:id="@+id/error_btn_retry"
+        android:background="@color/transparent"
+        android:textSize="@dimen/activity_margin_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/activity_margin_bottom"
+        android:text="@string/btn_retry"
+        android:textColor="@color/colorPrimary"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+
 </RelativeLayout>

@@ -1,63 +1,93 @@
 package homeaway.com.foodfinder;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.arlib.floatingsearchview.FloatingSearchView;
 
+import homeaway.com.foodfinder.activity.DetailsActivity;
 import homeaway.com.foodfinder.adapter.SearchAdapter;
-import homeaway.com.foodfinder.model.venueModel.Response;
 import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import homeaway.com.foodfinder.network.FourSquareService;
 import homeaway.com.foodfinder.network.RetrofitClientInstance;
+import homeaway.com.foodfinder.util.BookmarkPreferences;
 import homeaway.com.foodfinder.util.Config;
 import homeaway.com.foodfinder.util.DateUtil;
+import homeaway.com.foodfinder.util.PaginationAdapterCallback;
+import homeaway.com.foodfinder.util.PaginationScrollListener;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import retrofit2.Call;
-import retrofit2.Callback;
+import io.reactivex.schedulers.Schedulers;
 import retrofit2.Retrofit;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements PaginationAdapterCallback {
 
+    BookmarkPreferences preferences;
     FloatingSearchView searchView;
 
     RecyclerView recyclerView;
+
     SearchAdapter searchAdapter;
-    RecyclerView.LayoutManager layoutManager;
+    LinearLayoutManager layoutManager;
 
     LottieAnimationView emptyView;
 
     Retrofit retrofitClientInstance;
+
+    //track subscriptions
     private CompositeDisposable disposable;
 
     private ProgressDialog pDialog;
 
     String userSearch;
 
+    //pagination constants
+    private static final int PAGE_START = 1;
+    private boolean isLoading = false;
+    private boolean isLastPage = false;
+    // value can be modified based on the size of response
+    private int TOTAL_PAGES = 6;
+    private int currentPage = PAGE_START;
+    Button retryButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        //load preferences
+        preferences = BookmarkPreferences.getBookmarkPreferences();
+
         searchView = findViewById(R.id.floating_search_view);
         recyclerView = findViewById(R.id.search_rv);
         emptyView = findViewById(R.id.emptyView_rv);
+        retryButton = findViewById(R.id.error_btn_retry);
 
-        layoutManager = new LinearLayoutManager(getApplicationContext());
+        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
-        //recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
         disposable = new CompositeDisposable();
         displayVenues();
+
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                loadFirstPage(getFourSquareService());
+            }
+        });
     }
 
     @Override
@@ -92,7 +122,7 @@ public class SearchActivity extends AppCompatActivity {
     protected void onDestroy() {
         //dispose subscriptions
         if (disposable != null && !disposable.isDisposed()) {
-            disposable.dispose();
+            disposable.clear();
         }
 
         super.onDestroy();
@@ -116,6 +146,42 @@ public class SearchActivity extends AppCompatActivity {
         // Call the Foursquare API to display venues from seattle
         FourSquareService foursquare = getFourSquareService();
 
+        searchAdapter = new SearchAdapter(this);
+        recyclerView.setAdapter(searchAdapter);
+        searchAdapter.setOnClickedListener(itemClickedListener);
+
+        //pagination
+        recyclerView.addOnScrollListener(new PaginationScrollListener(layoutManager) {
+            @Override
+            protected void loadMoreItems() {
+                isLoading = true;
+                currentPage += 1;
+
+                // mocking network delay for API call
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadNextPage(foursquare);
+                    }
+                }, 1000);
+            }
+
+            @Override
+            public int getTotalPageCount() {
+                return TOTAL_PAGES;
+            }
+
+            @Override
+            public boolean isLastPage() {
+                return isLastPage;
+            }
+
+            @Override
+            public boolean isLoading() {
+                return isLoading;
+            }
+        });
+
         Log.i("Harika", "Client Id: [" + Config.FOURSQUARE_CLIENT_ID + "], "
                 + "Client Secret: [" + Config.FOURSQUARE_CLIENT_SECRET + "], "
                 + "Date: [" + DateUtil.getTodaysDate() + "], "
@@ -123,15 +189,17 @@ public class SearchActivity extends AppCompatActivity {
                 + "Query: [" + Config.QUERY + "]"
         );
 
-        Call<VenueResponse> displayVenuesCall = foursquare.searchVenues(
-                Config.FOURSQUARE_CLIENT_ID,
-                Config.FOURSQUARE_CLIENT_SECRET,
-                DateUtil.getTodaysDate(),
-                Config.PLACE,
-                Config.QUERY
-        );
+        loadFirstPage(foursquare);
 
-        displayVenuesCall.enqueue(new Callback<VenueResponse>() {
+//        Call<VenueResponse> displayVenuesCall = foursquare.searchVenues(
+//                Config.FOURSQUARE_CLIENT_ID,
+//                Config.FOURSQUARE_CLIENT_SECRET,
+//                DateUtil.getTodaysDate(),
+//                Config.PLACE,
+//                Config.QUERY
+//        );
+
+        /*displayVenuesCall.enqueue(new Callback<VenueResponse>() {
             @Override
             public void onResponse(Call<VenueResponse> call, retrofit2.Response<VenueResponse> response) {
                 handleResults(response.body().getResponse());
@@ -141,53 +209,37 @@ public class SearchActivity extends AppCompatActivity {
             public void onFailure(Call<VenueResponse> call, Throwable t) {
                 handleError(t);
             }
-        });
-
-
-//        try {
-//            Response venueList = displayVenuesCall.execute().body();
-//            handleResults(venueList);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-//        displayVenuesCall.enqueue(new Callback<Response>() {
-//            @Override
-//            public void onResponse(@NonNull Call<Response> call, @NonNull Response<Response> response) {
-//                handleResults(response.body());
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Response> call, Throwable t) {
-//                handleError(t);
-//            }
-//        });
-
-//        disposable.add(
-//        Response venueList = foursquare.searchVenues(
-//                Config.FOURSQUARE_CLIENT_ID,
-//                Config.FOURSQUARE_CLIENT_SECRET,
-//                DateUtil.getTodaysDate(),
-//                Config.PLACE,
-//                Config.QUERY)
-//                .subscribeOn(Schedulers.io()) //observable does work in a background thread
-//                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
-//                .blockingFirst();
-//        //.subscribe(this::handleResults, this::handleError)
-////        );
-//        handleResults(venueList);
+        });*/
     }
 
-    private void handleResults(Response response) {
-        Log.i("Phani", "handleResults: [Results]" + response.getVenues());
+    private void loadFirstPage(FourSquareService foursquare) {
+        Log.i("harika", "loadFirstPage: ");
+
+        disposable.add(foursquare.searchVenues(
+                Config.FOURSQUARE_CLIENT_ID,
+                Config.FOURSQUARE_CLIENT_SECRET,
+                DateUtil.getTodaysDate(),
+                Config.PLACE,
+                Config.QUERY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::handleResults, this::handleError));
+
+
+    }
+
+    private void handleResults(VenueResponse venueResponse) {
         pDialog.dismiss();
 
-//        if(response.getVenues() != null) {
-            searchAdapter = new SearchAdapter(getApplicationContext(), response);
-            recyclerView.setAdapter(searchAdapter);
-//        } else {
-//            Toast.makeText(getApplicationContext(), getString(R.string.app_name), Toast.LENGTH_LONG).show();
-//        }
+        if(venueResponse.getResponse().getVenues() != null) {
+            searchAdapter.addAll(venueResponse.getResponse().getVenues());
+
+            if (currentPage <= TOTAL_PAGES) {
+                searchAdapter.addLoadingFooter();
+            } else {
+                isLastPage = true;
+            }
+        }
     }
 
     private void handleError(Throwable throwable) {
@@ -195,30 +247,95 @@ public class SearchActivity extends AppCompatActivity {
         Log.e("Observer", ""+ throwable.toString());
         emptyView.setVisibility(View.VISIBLE);
         emptyView.playAnimation();
+        retryButton.setVisibility(View.VISIBLE);
         Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
     }
 
-//    public void displayRecommendations() {
-//
-//        FourSquareService foursquare = getFourSquareService();
-//        disposables.add(foursquare.SearchRecommendations (
-//                Config.FOURSQUARE_CLIENT_ID,
-//                Config.FOURSQUARE_CLIENT_SECRET,
-//                DateUtil.getTodaysDate(),
-//                Config.PLACE,
-//                userSearch,
-//                Config.LIMIT)
-//                .subscribeOn(Schedulers.newThread()) //work in background thread
-//                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
-//                .subscribe(this::handleSearchResults, this::handleError));
-//
-//    }
-//
-//    private void handleSearchResults(Response venueList) {
-//
-//        if(venueList.getVenues() != null) {
-//            //TODO create another listview for search suggestions
-//        }
-//    }
+    private void loadNextPage(FourSquareService foursquare) {
+        Log.d("harika", "loadNextPage: " + currentPage);
 
+        disposable.add(foursquare.searchVenues(
+                Config.FOURSQUARE_CLIENT_ID,
+                Config.FOURSQUARE_CLIENT_SECRET,
+                DateUtil.getTodaysDate(),
+                Config.PLACE,
+                Config.QUERY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::handleNextResults, this::handleError));
+    }
+
+    private void handleNextResults(VenueResponse venueResponse) {
+        pDialog.dismiss();
+        if(venueResponse.getResponse().getVenues() != null){
+            searchAdapter.removeLoadingFooter();
+            isLoading = false;
+
+            searchAdapter.addAll(venueResponse.getResponse().getVenues());
+
+            if (currentPage != TOTAL_PAGES) {
+                searchAdapter.addLoadingFooter();
+            } else {
+                isLastPage = true;
+            }
+        }
+    }
+
+    private SearchAdapter.OnItemClickedListener itemClickedListener = (response, position) -> {
+        //redirect to details activity
+        if(response != null){
+            Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+            // Passes the extra venue details
+            intent.putExtra("name", response.getName());
+            intent.putExtra("ID", response.getId());
+            intent.putExtra("latitude", response.getLocation().getLat());
+            intent.putExtra("longitude", response.getLocation().getLng());
+            startActivity(intent);
+        }
+    };
+
+    /*private void handleResults(Response response) {
+        Log.i("harika", "handleResults: [Results]" + response.getVenues());
+        pDialog.dismiss();
+
+        if(response.getVenues() != null) {
+            searchAdapter = new SearchAdapter(getApplicationContext(), response);
+            recyclerView.setAdapter(searchAdapter);
+        }
+    }*/
+
+
+
+    public void displayRecommendations() {
+
+        FourSquareService foursquare = getFourSquareService();
+        disposable.add(foursquare.SearchRecommendations (
+                Config.FOURSQUARE_CLIENT_ID,
+                Config.FOURSQUARE_CLIENT_SECRET,
+                DateUtil.getTodaysDate(),
+                Config.PLACE,
+                userSearch,
+                Config.LIMIT)
+                .subscribeOn(Schedulers.newThread()) //work in background thread
+                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
+                .subscribe(this::handleSearchResults, this::handleSearchError));
+
+    }
+
+    private void handleSearchResults(VenueResponse venueResponse) {
+        if(venueResponse.getResponse().getVenues() != null) {
+            //TODO
+        }
+    }
+
+    private void handleSearchError(Throwable throwable) {
+        Log.e("Observer", ""+ throwable.toString());
+        Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
+    }
+
+
+    @Override
+    public void retryPageLoad() {
+        loadNextPage(getFourSquareService());
+    }
 }

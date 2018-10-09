@@ -1,10 +1,9 @@
 package homeaway.com.foodfinder.model.venueModel;
 
-import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import homeaway.com.foodfinder.model.venueModel.Venue;
+import java.util.List;
 
 public class Response {
 

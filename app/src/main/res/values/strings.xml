@@ -4,4 +4,9 @@
     <string name="server_error">Noshup cannot connect to Foursquare\'s servers!</string>
     <string name="loading_message">Loading Data.. Please wait…</string>
     <string name="miles">m</string>
+    <string name="open_now">Open Now</string>
+    <string name="closed">Closed</string>
+    <string name="tap_to_reload">Tap to reload</string>
+    <string name="error_msg_unknown">An unexpected error occurred</string>
+    <string name="btn_retry">Retry</string>
 </resources>

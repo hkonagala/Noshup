@@ -4,4 +4,16 @@
     <color name="colorPrimaryDark">#255d00</color>
     <color name="colorAccent">#33691e</color>
     <color name="white">#ffffff</color>
+
+    <!--rating colors-->
+    <color name="Strawberry">#E6092C</color>
+    <color name="MacCheese">#FF6701</color>
+    <color name="Orange">#FF9600</color>
+    <color name="Banana">#FFC800</color>
+    <color name="Lime">#C5DE35</color>
+    <color name="Guacamole">#73CF42</color>
+    <color name="Kale">#00B551</color>
+
+    <color name="placeholder_grey">#AAADC4</color>
+    <color name="placeholder_grey_20">#33AAADC4</color>
 </resources>

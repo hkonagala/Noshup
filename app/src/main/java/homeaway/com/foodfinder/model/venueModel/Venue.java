@@ -6,10 +6,6 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 import homeaway.com.foodfinder.model.exploreModel.Hours;
-import homeaway.com.foodfinder.model.venueModel.Categories;
-import homeaway.com.foodfinder.model.venueModel.Contact;
-import homeaway.com.foodfinder.model.venueModel.Location;
-import homeaway.com.foodfinder.model.venueModel.Menu;
 
 public class Venue {
 

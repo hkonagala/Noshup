@@ -5,8 +5,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import homeaway.com.foodfinder.model.venueModel.FormattedAddress;
-
 public class Location {
 
     @SerializedName("address")
