@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
-import homeaway.com.foodfinder.model.venueModel.Response;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 
 public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHolder> {
@@ -69,29 +68,29 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
         // Sets each view with the appropriate venue details
         Venue venue = results.get(position);
 
-        holder.suggestionName.setText(venue.getName());
-        if(venue.getHours().getIsOpen()){
-            holder.suggestionHours.setText(context.getResources().getString(R.string.open_now));
-        } else {
-            holder.suggestionHours.setText(context.getResources().getString(R.string.closed));
-        }
-
-        double ratingColor = Double.parseDouble(venue.getRatingColor());
-        if (ratingColor >= 9.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Kale));
-        } else if (ratingColor >= 8.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Guacamole));
-        } else if (ratingColor >= 7.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Lime));
-        } else if (ratingColor >= 6.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Banana));
-        } else if (ratingColor >= 5.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Orange));
-        } else if (ratingColor >= 4.0) {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.MacCheese));
-        } else {
-            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Strawberry));
-        }
+        holder.suggestionName.setText(venue.getCategories().get(position).getName());
+//        if(venue.getHours().getIsOpen()){
+//            holder.suggestionHours.setText(context.getResources().getString(R.string.open_now));
+//        } else {
+//            holder.suggestionHours.setText(context.getResources().getString(R.string.closed));
+//        }
+//
+//        double ratingColor = Double.parseDouble(venue.getRatingColor());
+//        if (ratingColor >= 9.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Kale));
+//        } else if (ratingColor >= 8.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Guacamole));
+//        } else if (ratingColor >= 7.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Lime));
+//        } else if (ratingColor >= 6.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Banana));
+//        } else if (ratingColor >= 5.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Orange));
+//        } else if (ratingColor >= 4.0) {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.MacCheese));
+//        } else {
+//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Strawberry));
+//        }
 
         if(mLastAnimatedItemPosition < position){
             animateItem(holder.itemView);
@@ -129,13 +128,13 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView suggestionName, suggestionHours, suggestionRating;
+        TextView suggestionName/*, suggestionHours, suggestionRating*/;
 
         ViewHolder(View itemView) {
             super(itemView);
             suggestionName = itemView.findViewById(R.id.suggestion_name);
-            suggestionHours = itemView.findViewById(R.id.suggestion_hours);
-            suggestionRating = itemView.findViewById(R.id.suggestion_rating);
+//            suggestionHours = itemView.findViewById(R.id.suggestion_hours);
+//            suggestionRating = itemView.findViewById(R.id.suggestion_rating);
         }
     }
 }

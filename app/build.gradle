@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
     }
     buildTypes {
         release {
@@ -34,7 +35,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    //persistant toolbar
+    //persistant searchview
+    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
     implementation('com.github.arimorty:floatingsearchview:2.1.1')
     implementation 'com.android.support:cardview-v7:27.1.1'
 
@@ -48,7 +50,6 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.9.1'
 
-
     //rxjava
     implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
@@ -56,6 +57,9 @@ dependencies {
 
     // GSON body parser
     implementation 'com.google.code.gson:gson:2.8.2'
+
+    //google play service
+    implementation 'com.google.android.gms:play-services:12.0.1'
 
 }
 

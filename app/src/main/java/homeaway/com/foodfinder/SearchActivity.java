@@ -1,32 +1,48 @@
 package homeaway.com.foodfinder;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
-import com.arlib.floatingsearchview.FloatingSearchView;
+
+import java.util.Optional;
 
 import homeaway.com.foodfinder.activity.DetailsActivity;
+import homeaway.com.foodfinder.activity.MapsMarkerActivity;
 import homeaway.com.foodfinder.adapter.SearchAdapter;
-import homeaway.com.foodfinder.adapter.SuggestionsAdapter;
+import homeaway.com.foodfinder.model.exploreModel.Hours;
+import homeaway.com.foodfinder.model.venueModel.Contact;
+import homeaway.com.foodfinder.model.venueModel.Location;
+import homeaway.com.foodfinder.model.venueModel.Venue;
+import homeaway.com.foodfinder.model.venueModel.VenueDetails;
 import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import homeaway.com.foodfinder.network.FourSquareService;
 import homeaway.com.foodfinder.network.RetrofitClientInstance;
-import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.Config;
 import homeaway.com.foodfinder.util.DateUtil;
+import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;
 import homeaway.com.foodfinder.util.PaginationScrollListener;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -64,12 +80,13 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
 
     //floating action button
     FloatingActionButton fab;
-    
-    //search suggestions 
-    FloatingSearchView searchView;
-    private RecyclerView mSearchResultsList;
-    private SuggestionsAdapter mSearchResultsAdapter;
-    private String mLastQuery = "";
+
+    //searchview
+    private SearchView searchView;
+    private SearchView.SearchAutoComplete   mSearchAutoComplete;
+    Toolbar toolbar;
+//    SuggestionsAdapter adapter;
+//    private String mLastQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +97,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         preferences = FavoritePreferences.getFavoritePreferences();
 
 
+        Toolbar toolbar = findViewById(R.id.search_toolbar);
+        setSupportActionBar(toolbar);
+//        searchView = findViewById(R.id.floating_search_view);
         recyclerView = findViewById(R.id.search_rv);
         emptyContainer = findViewById(R.id.empty_container);
         emptyView = findViewById(R.id.emptyView_rv);
@@ -98,40 +118,27 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         disposable = new CompositeDisposable();
         displayVenues();
 
-        retryButton.setOnClickListener(view -> loadFirstPage(getFourSquareService()));
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isNetworkConnected()){
+                    loadFirstPage(getFourSquareService());
+                }
+
+            }
+        });
         fab.setOnClickListener(view -> {
             //go to maps activity
+            Intent intent = new Intent(this, MapsMarkerActivity.class);
+            startActivity(intent);
+
         });
 
-        initSearchResults();
-    }
-
-    public void initSearchResults(){
-        searchView = findViewById(R.id.floating_search_view);
-//        mSearchResultsList = (RecyclerView) findViewById(R.id.suggestion_item);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        searchView.setOnQueryChangeListener((oldQuery, newQuery) -> {
-            mLastQuery = newQuery;
-//            displayRecommendations();
-//            Toast.makeText(getApplicationContext(), mLastQuery, Toast.LENGTH_LONG).show();
-        });
-
-        searchView.setOnLeftMenuClickListener(new FloatingSearchView.OnLeftMenuClickListener() {
-            @Override
-            public void onMenuOpened() {
-                //do something
-            }
-
-            @Override
-            public void onMenuClosed() {
-                //do something
-            }
-        });
     }
 
     @Override
@@ -178,7 +185,7 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
                 isLoading = true;
                 currentPage += 1;
 
-                // mocking network delay for API call
+                // making network delay for API call
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -211,26 +218,6 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         );
 
         loadFirstPage(foursquare);
-
-//        Call<VenueResponse> displayVenuesCall = foursquare.searchVenues(
-//                Config.FOURSQUARE_CLIENT_ID,
-//                Config.FOURSQUARE_CLIENT_SECRET,
-//                DateUtil.getTodaysDate(),
-//                Config.PLACE,
-//                Config.QUERY
-//        );
-
-        /*displayVenuesCall.enqueue(new Callback<VenueResponse>() {
-            @Override
-            public void onResponse(Call<VenueResponse> call, retrofit2.Response<VenueResponse> response) {
-                handleResults(response.body().getResponse());
-            }
-
-            @Override
-            public void onFailure(Call<VenueResponse> call, Throwable t) {
-                handleError(t);
-            }
-        });*/
     }
 
     private void loadFirstPage(FourSquareService foursquare) {
@@ -267,9 +254,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         pDialog.dismiss();
         Log.e("Observer", ""+ throwable.toString());
         emptyContainer.setVisibility(View.VISIBLE);
-//        emptyView.setVisibility(View.VISIBLE);
         emptyView.playAnimation();
-//        retryButton.setVisibility(View.VISIBLE);
+        fab.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
         Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
     }
 
@@ -305,30 +292,134 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
 
     private SearchAdapter.OnItemClickedListener itemClickedListener = (response, position) -> {
         //redirect to details activity
-        if(response != null){
-            Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
-            // Passes the extra venue details
-            intent.putExtra("name", response.getName());
-            intent.putExtra("ID", response.getId());
-            intent.putExtra("latitude", response.getLocation().getLat());
-            intent.putExtra("longitude", response.getLocation().getLng());
-            startActivity(intent);
+        Log.i("harika", "position " + position);
+        if(response != null) {
+            getDetails(response.getId());
+
         }
     };
 
-    /*private void handleResults(Response response) {
-        Log.i("harika", "handleResults: [Results]" + response.getVenues());
-        pDialog.dismiss();
+    private void getDetails(String id) {
+        FourSquareService foursquare = getFourSquareService();
+        disposable.add(foursquare.getVenueDetails (
+                id,
+                Config.FOURSQUARE_CLIENT_ID,
+                Config.FOURSQUARE_CLIENT_SECRET,
+                DateUtil.getTodaysDate())
+                .subscribeOn(Schedulers.newThread()) //work in background thread
+                .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
+                .subscribe(this::handleDetailResults, this::handleSearchError));
+        Log.i("harika", "before intent");
+    }
 
-        if(response.getVenues() != null) {
-            searchAdapter = new SearchAdapter(getApplicationContext(), response);
-            recyclerView.setAdapter(searchAdapter);
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void handleDetailResults(VenueDetails venueDetails) {
+//        Venue venue = venueDetails.getResponse().getVenue().get(0);
+        Log.i("harika", "right before intent");
+        Venue venue = venueDetails.getResponse().getVenue();
+        if(venue.getId() != null) {
+            Intent intent = new Intent(SearchActivity.this, DetailsActivity.class);
+            Log.i("harika", "called intent");
+            // Passes the extra venue details
+            intent.putExtra("ID",venue.getId());
+            intent.putExtra("name", venue.getName());
+            intent.putExtra("category", venue.getCategories().get(0).getName());
+            //pass hours data if available
+            intent.putExtra("openHourStatus",
+                    Optional.ofNullable(venue.getHours())
+            .map(Hours::getStatus)
+            .orElse(null));
+            intent.putExtra("isOpenNow",
+                    Optional.ofNullable(venue.getHours())
+            .map(Hours::getOpen)
+            .orElse(false));
+            //check for menu, if yes pass menu link
+            intent.putExtra("hasMenu", venue.getHasMenu());
+            intent.putExtra("menu", Optional.ofNullable(venue.getMenu())
+                    .map(homeaway.com.foodfinder.model.venueModel.Menu::getUrl)
+                    .orElse(null));
+            intent.putExtra("mobileMenu", Optional.ofNullable(venue.getMenu())
+                    .map(homeaway.com.foodfinder.model.venueModel.Menu::getMobileUrl)
+                    .orElse(null));
+            //otherwise pass url if available
+            intent.putExtra("url", venue.getUrl());
+            //contact
+            intent.putExtra("contact", Optional.ofNullable(venue.getContact())
+            .map(Contact::getFormattedPhone)
+            .orElse(null));
+            //address
+            intent.putExtra("address", venue.getLocation().getFormattedAddress().get(0) +
+                    venue.getLocation().getFormattedAddress().get(1)); //full address
+            //location for mapview
+            intent.putExtra("latitude", Optional.ofNullable(venue.getLocation())
+            .map(Location::getLat)
+            .orElse(0d));
+            intent.putExtra("longitude", Optional.ofNullable(venue.getLocation())
+            .map(Location::getLng)
+            .orElse(0d));
+            //rating
+            intent.putExtra("rating", venue.getRating());
+            //rating color
+            intent.putExtra("ratingcolor", venue.getRatingColor());
+            startActivity(intent);
+            Log.i("harika", "intent success");
+        } else {
+            Log.i("harika", "intent failed");
         }
-    }*/
+    }
 
+    @Override
+    public void retryPageLoad() {
 
+        if(isNetworkConnected()){
+            loadNextPage(getFourSquareService());
+            emptyContainer.setVisibility(View.GONE);
+            emptyView.clearAnimation();
+            fab.setVisibility(View.VISIBLE);
+        }
 
-    public void displayRecommendations() {
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @SuppressLint("ResourceType")
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+
+        MenuItem item = menu.findItem(R.id.action_search);
+        searchView = (SearchView) item.getActionView();
+        mSearchAutoComplete = (SearchView.SearchAutoComplete) searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+//        mSearchAutoComplete.setDropDownBackgroundResource(getColor(R.color.white));
+        mSearchAutoComplete.setDropDownAnchor(R.id.action_search);
+        mSearchAutoComplete.setThreshold(0);
+
+        //search request
+        searchView.setQueryHint(getString(R.string.search_restaurants));
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                displayRecommendations(query);
+
+//                pDialog = new ProgressDialog(SearchActivity.this);
+//                pDialog.setMessage(getString(R.string.loading_message));
+//                pDialog.setIndeterminate(false);
+//                pDialog.setCancelable(true);
+//                pDialog.show();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                displayRecommendations(newText);
+                return true;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public void displayRecommendations(String mLastQuery) {
 
         FourSquareService foursquare = getFourSquareService();
 
@@ -341,24 +432,26 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
                 Config.LIMIT)
                 .subscribeOn(Schedulers.newThread()) //work in background thread
                 .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread
-                .subscribe(this::handleSearchResults, this::handleSearchError));
+                .subscribe(venueResponse -> handleSearchResults(venueResponse), this::handleSearchError));
 
     }
 
     private void handleSearchResults(VenueResponse venueResponse) {
         if(venueResponse.getResponse().getVenues() != null) {
-            //TODO
+
+//            Log.i("harika", String.valueOf(new String[]{venueResponse.getResponse().getVenue().get(0).getName()}));
         }
     }
 
     private void handleSearchError(Throwable throwable) {
+        pDialog.dismiss();
         Log.e("Observer", ""+ throwable.toString());
-        Toast.makeText(getApplicationContext(), getString(R.string.server_error), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.server_error), Toast.LENGTH_LONG).show();
     }
 
 
-    @Override
-    public void retryPageLoad() {
-        loadNextPage(getFourSquareService());
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null;
     }
 }

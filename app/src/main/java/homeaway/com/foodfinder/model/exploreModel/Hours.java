@@ -12,6 +12,10 @@ public class Hours {
     @Expose
     private Boolean isLocalHoliday;
 
+    @SerializedName("status")
+    @Expose
+    private String status;
+
     /**
      * No args constructor for use in serialization
      *
@@ -23,27 +27,35 @@ public class Hours {
      *
      * @param isLocalHoliday
      * @param isOpen
+     * @param status
      */
-    public Hours(Boolean isOpen, Boolean isLocalHoliday) {
-        super();
+    public Hours(Boolean isOpen, Boolean isLocalHoliday, String status) {
         this.isOpen = isOpen;
         this.isLocalHoliday = isLocalHoliday;
+        this.status = status;
     }
 
-    public Boolean getIsOpen() {
+    public Boolean getOpen() {
         return isOpen;
     }
 
-    public void setIsOpen(Boolean isOpen) {
-        this.isOpen = isOpen;
+    public void setOpen(Boolean open) {
+        isOpen = open;
     }
 
-    public Boolean getIsLocalHoliday() {
+    public Boolean getLocalHoliday() {
         return isLocalHoliday;
     }
 
-    public void setIsLocalHoliday(Boolean isLocalHoliday) {
-        this.isLocalHoliday = isLocalHoliday;
+    public void setLocalHoliday(Boolean localHoliday) {
+        isLocalHoliday = localHoliday;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

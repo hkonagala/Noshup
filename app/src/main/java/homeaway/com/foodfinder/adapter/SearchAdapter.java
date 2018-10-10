@@ -16,8 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +28,8 @@ import java.util.Map;
 
 import homeaway.com.foodfinder.R;
 import homeaway.com.foodfinder.model.venueModel.Venue;
-import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.DistanceUtil;
+import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -118,7 +121,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 String url = venue.getCategories().get(0).getIcon().getPrefix();
                 if(url.contains("ss3.4sqi.net")){
                     url = url.replace("ss3.4sqi.net", "foursquare.com");
-                    url = url + "bg_64" + venue.getCategories().get(0).getIcon().getSuffix();
+                    url = url + "64" + venue.getCategories().get(0).getIcon().getSuffix();
                 }
                 Uri uri = Uri.parse(url);
 //                Log.i("harika", uri.toString());
@@ -133,6 +136,9 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 viewHolder.name.setText(venue.getName());
                 viewHolder.category.setText(venue.getCategories().get(0).getName());
 
+                viewHolder.address.setText(venue.getLocation().getFormattedAddress().get(0) +
+                        venue.getLocation().getFormattedAddress().get(1));
+
                 //distance between the venue and center of seattle
                 Location venueLocation = new Location("");
                 venueLocation.setLatitude(venue.getLocation().getLat());
@@ -141,7 +147,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 //                        " longitude: " + venueLocation.getLongitude());
                 Location seattleCenter = new Location("");
                 seattleCenter.setLatitude(47.6062);
-                seattleCenter.setLongitude(122.3321);
+                seattleCenter.setLongitude(-122.3321);
 
                 double distanceFromCenter = DistanceUtil.distance(
                         venueLocation.getLatitude(),
@@ -151,16 +157,19 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 );
                 double distance = DistanceUtil.convertIntoMiles(distanceFromCenter);
-                viewHolder.distance.setText(distance + " " + context.getString(R.string.miles));
+                double roundedOffDistance = Math.round(distance * 100.0) / 100.0;
+                viewHolder.distance.setText(roundedOffDistance + " " + context.getString(R.string.miles));
 
                 //bookmark click listener
                 viewHolder.bookmark.setOnClickListener(null);
                 clickEvent(viewHolder);
 
                 if(checkBookmarks(venue)) {
-                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_black_24dp));
+                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+//                    Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
                 } else {
-                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_border_black_24dp));
+                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+//                    Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
                 }
 
                 //additional venue details for the map
@@ -212,6 +221,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         ImageView icon;
         TextView name;
         TextView category;
+        TextView address;
         TextView distance;
         ImageView bookmark;
 
@@ -227,6 +237,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             icon = itemView.findViewById(R.id.search_icon);
             name = itemView.findViewById(R.id.search_name);
             category = itemView.findViewById(R.id.search_category);
+            address = itemView.findViewById(R.id.search_address);
             distance = itemView.findViewById(R.id.search_distance);
             bookmark = itemView.findViewById(R.id.search_bookmark);
 
@@ -284,14 +295,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private void saveBookmark(ViewHolder holder, Venue venue) {
         preferences.addFavorites(context, venue);
         Log.i("harika", "bookmark added: " + results.get(holder.getAdapterPosition()).getName());
-        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_black_24dp));
+        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
     }
 
     private void deleteBookmark(ViewHolder holder, Venue venue) {
         preferences.removeFavorites(context, venue);
         Log.i("harika", "bookmark deleted: " + results.get(holder.getAdapterPosition()).getName());
-        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_border_black_24dp));
+        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+        Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
 
     }

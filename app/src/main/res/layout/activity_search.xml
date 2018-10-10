@@ -15,21 +15,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.arlib.floatingsearchview.FloatingSearchView
-            android:id="@+id/floating_search_view"
-            style="@style/SearchView"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/search_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="72dp"
-            app:floatingSearch_close_search_on_keyboard_dismiss="true"
-            app:floatingSearch_leftActionMode="showSearch"
-            app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-            app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-            app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-            app:floatingSearch_searchHint="@string/search_restaurants"
-            app:floatingSearch_showSearchKey="true"
-            app:floatingSearch_dimBackground="false"
-            app:floatingSearch_backgroundColor="@color/white"
-            app:floatingSearch_suggestionsListAnimDuration="250" />
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize" />
+
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/search_rv"

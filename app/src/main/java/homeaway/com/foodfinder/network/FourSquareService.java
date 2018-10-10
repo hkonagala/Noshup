@@ -1,8 +1,11 @@
 package homeaway.com.foodfinder.network;
 
+import homeaway.com.foodfinder.model.venueModel.Venue;
+import homeaway.com.foodfinder.model.venueModel.VenueDetails;
 import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface FourSquareService {
@@ -31,7 +34,17 @@ public interface FourSquareService {
             @Query("client_secret") String clientSecret,
             @Query("v") String date,
             @Query("near") String place,
-            @Query("intent") String userInput,
+            @Query("section") String userInput,
             @Query("limit") int limit
+    );
+
+    //get request for details of a venue
+    @GET("/v2/venues/{venueID}")
+    Observable<VenueDetails> getVenueDetails (
+            @Path("venueID") String id,
+            @Query("client_id") String clientID,
+            @Query("client_secret") String clientSecret,
+            @Query("v") String date
+
     );
 }
