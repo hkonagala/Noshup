@@ -2,6 +2,7 @@ package homeaway.com.foodfinder.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,10 +21,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import homeaway.com.foodfinder.R;
 import homeaway.com.foodfinder.model.venueModel.Venue;
-import homeaway.com.foodfinder.util.BookmarkPreferences;
+import homeaway.com.foodfinder.util.FavoritePreferences;
+import homeaway.com.foodfinder.util.DistanceUtil;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -38,7 +41,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private OnItemClickedListener mItemClickListener = null;
 
     //shared preference to persist bookmarks
-    private BookmarkPreferences preferences;
+    private FavoritePreferences preferences;
 
     //pagination constants
     private static final int ITEM = 0;
@@ -53,7 +56,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 //        this.results = results;
         this.mCallback = (PaginationAdapterCallback) context;
         results = new ArrayList<>();
-        preferences = BookmarkPreferences.getBookmarkPreferences();
+        preferences = FavoritePreferences.getFavoritePreferences();
     }
 
     public List<Venue> getResults() {
@@ -118,7 +121,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     url = url + "bg_64" + venue.getCategories().get(0).getIcon().getSuffix();
                 }
                 Uri uri = Uri.parse(url);
-                Log.i("harika", uri.toString());
+//                Log.i("harika", uri.toString());
                 Picasso.with(context)
                         .load(uri)
                         .resize(80, 80)
@@ -129,7 +132,26 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
                 viewHolder.name.setText(venue.getName());
                 viewHolder.category.setText(venue.getCategories().get(0).getName());
-                viewHolder.distance.setText((venue.getLocation().getDistance()) + context.getString(R.string.miles));
+
+                //distance between the venue and center of seattle
+                Location venueLocation = new Location("");
+                venueLocation.setLatitude(venue.getLocation().getLat());
+                venueLocation.setLongitude(venue.getLocation().getLng());
+//                Log.i("harika", "latitude: " + venueLocation.getLatitude() +
+//                        " longitude: " + venueLocation.getLongitude());
+                Location seattleCenter = new Location("");
+                seattleCenter.setLatitude(47.6062);
+                seattleCenter.setLongitude(122.3321);
+
+                double distanceFromCenter = DistanceUtil.distance(
+                        venueLocation.getLatitude(),
+                        venueLocation.getLongitude(),
+                        seattleCenter.getLatitude(),
+                        seattleCenter.getLongitude()
+
+                );
+                double distance = DistanceUtil.convertIntoMiles(distanceFromCenter);
+                viewHolder.distance.setText(distance + " " + context.getString(R.string.miles));
 
                 //bookmark click listener
                 viewHolder.bookmark.setOnClickListener(null);
@@ -170,7 +192,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public int getItemCount() {
         List<Venue> venues = results;
         if (venues != null) {
-            Log.i("harika", "size " + venues.size());
+//            Log.i("harika", "size " + venues.size());
             return venues.size();
         } else {
             return 0;
@@ -250,7 +272,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.bookmark.setOnClickListener(view -> {
             //getAdapterPosition returns the adapter position of the item in viewholder
             Venue venue = results.get(holder.getAdapterPosition());
-            if(checkBookmarks(venue)) {
+
+            if(!checkBookmarks(venue)) {
                 saveBookmark(holder, venue);
             } else {
                 deleteBookmark(holder, venue);
@@ -259,14 +282,14 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private void saveBookmark(ViewHolder holder, Venue venue) {
-        preferences.addBookmark(context, venue);
+        preferences.addFavorites(context, venue);
         Log.i("harika", "bookmark added: " + results.get(holder.getAdapterPosition()).getName());
         holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_black_24dp));
         notifyDataSetChanged();
     }
 
     private void deleteBookmark(ViewHolder holder, Venue venue) {
-        preferences.removeBookmark(context, venue);
+        preferences.removeFavorites(context, venue);
         Log.i("harika", "bookmark deleted: " + results.get(holder.getAdapterPosition()).getName());
         holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_star_border_black_24dp));
         notifyDataSetChanged();
@@ -275,19 +298,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     /**** Checks whether a particular bookmark exists in SharedPreferences *****/
     private boolean checkBookmarks(Venue checkBookmark) {
-        boolean check = false;
-        List<Venue> favorites = preferences.getBookmarks(context);
-        Log.i("harika", "list of bookmarks: " + favorites);
-        if (favorites != null) {
-            for (Venue bookmark : favorites) {
-                if (bookmark.equals(checkBookmark)) {
-                    check = true;
-                    break;
-                }
-            }
-        }
-        Log.i("harika", "boolean: " + check);
-        return check;
+        Map<String, Venue> favorites = preferences.getFavorites(context);
+        return favorites != null && favorites.containsKey(checkBookmark.getId());
     }
 
     /************************************item click listener************************************************/

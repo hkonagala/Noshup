@@ -2,10 +2,8 @@ package homeaway.com.foodfinder;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -22,10 +20,11 @@ import com.arlib.floatingsearchview.FloatingSearchView;
 
 import homeaway.com.foodfinder.activity.DetailsActivity;
 import homeaway.com.foodfinder.adapter.SearchAdapter;
+import homeaway.com.foodfinder.adapter.SuggestionsAdapter;
 import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import homeaway.com.foodfinder.network.FourSquareService;
 import homeaway.com.foodfinder.network.RetrofitClientInstance;
-import homeaway.com.foodfinder.util.BookmarkPreferences;
+import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.Config;
 import homeaway.com.foodfinder.util.DateUtil;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;
@@ -37,8 +36,7 @@ import retrofit2.Retrofit;
 
 public class SearchActivity extends AppCompatActivity implements PaginationAdapterCallback {
 
-    BookmarkPreferences preferences;
-    FloatingSearchView searchView;
+    FavoritePreferences preferences;
 
     RecyclerView recyclerView;
 
@@ -55,8 +53,6 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
 
     private ProgressDialog pDialog;
 
-    String userSearch;
-
     //pagination constants
     private static final int PAGE_START = 1;
     private boolean isLoading = false;
@@ -68,6 +64,12 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
 
     //floating action button
     FloatingActionButton fab;
+    
+    //search suggestions 
+    FloatingSearchView searchView;
+    private RecyclerView mSearchResultsList;
+    private SuggestionsAdapter mSearchResultsAdapter;
+    private String mLastQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +77,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         setContentView(R.layout.activity_search);
 
         //load preferences
-        preferences = BookmarkPreferences.getBookmarkPreferences();
+        preferences = FavoritePreferences.getFavoritePreferences();
 
-        searchView = findViewById(R.id.floating_search_view);
+
         recyclerView = findViewById(R.id.search_rv);
         emptyContainer = findViewById(R.id.empty_container);
         emptyView = findViewById(R.id.emptyView_rv);
@@ -100,6 +102,13 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         fab.setOnClickListener(view -> {
             //go to maps activity
         });
+
+        initSearchResults();
+    }
+
+    public void initSearchResults(){
+        searchView = findViewById(R.id.floating_search_view);
+//        mSearchResultsList = (RecyclerView) findViewById(R.id.suggestion_item);
     }
 
     @Override
@@ -107,9 +116,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         super.onResume();
 
         searchView.setOnQueryChangeListener((oldQuery, newQuery) -> {
-            userSearch = newQuery;
+            mLastQuery = newQuery;
 //            displayRecommendations();
-//            Toast.makeText(getApplicationContext(), userSearch, Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), mLastQuery, Toast.LENGTH_LONG).show();
         });
 
         searchView.setOnLeftMenuClickListener(new FloatingSearchView.OnLeftMenuClickListener() {
@@ -322,12 +331,13 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
     public void displayRecommendations() {
 
         FourSquareService foursquare = getFourSquareService();
+
         disposable.add(foursquare.SearchRecommendations (
                 Config.FOURSQUARE_CLIENT_ID,
                 Config.FOURSQUARE_CLIENT_SECRET,
                 DateUtil.getTodaysDate(),
                 Config.PLACE,
-                userSearch,
+                mLastQuery,
                 Config.LIMIT)
                 .subscribeOn(Schedulers.newThread()) //work in background thread
                 .observeOn(AndroidSchedulers.mainThread()) // executes results on android main thread

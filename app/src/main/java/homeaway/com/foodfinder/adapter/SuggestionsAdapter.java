@@ -1,6 +1,7 @@
 package homeaway.com.foodfinder.adapter;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -8,8 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
+import com.arlib.floatingsearchview.util.Util;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
@@ -22,12 +27,35 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
     private Context context;
 
     // The list of results from the Foursquare API
-    private Response results;
+    private List<Venue> results;
 
-    public SuggestionsAdapter(Context context, Response results) {
-        this.context = context;
-        this.results = results;
+    //custom on item click listener
+    public interface OnItemClickListener{
+        void onClick(Venue venue);
     }
+
+    private OnItemClickListener mItemsOnClickListener;
+    private int mLastAnimatedItemPosition = -1;
+
+    public SuggestionsAdapter(Context context/*, Response results*/) {
+        this.context = context;
+//        this.results = results;
+        results = new ArrayList<>();
+    }
+
+    public List<Venue> getResults() {
+        return results;
+    }
+
+    public void setResults(List<Venue> results) {
+        this.results = results;
+        notifyDataSetChanged();
+    }
+
+    public void setItemsOnClickListener(OnItemClickListener onClickListener){
+        this.mItemsOnClickListener = onClickListener;
+    }
+
 
     @NonNull
     @Override
@@ -39,7 +67,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
     @Override
     public void onBindViewHolder(@NonNull SuggestionsAdapter.ViewHolder holder, int position) {
         // Sets each view with the appropriate venue details
-        Venue venue = results.getVenues().get(position);
+        Venue venue = results.get(position);
 
         holder.suggestionName.setText(venue.getName());
         if(venue.getHours().getIsOpen()){
@@ -64,11 +92,34 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
         } else {
             holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Strawberry));
         }
+
+        if(mLastAnimatedItemPosition < position){
+            animateItem(holder.itemView);
+            mLastAnimatedItemPosition = position;
+        }
+
+        if(mItemsOnClickListener != null){
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mItemsOnClickListener.onClick(venue);
+                }
+            });
+        }
+    }
+
+    private void animateItem(View itemView) {
+        itemView.setTranslationY(Util.getScreenHeight((Activity) itemView.getContext()));
+        itemView.animate()
+                .translationY(0)
+                .setInterpolator(new DecelerateInterpolator(3.f))
+                .setDuration(700)
+                .start();
     }
 
     @Override
     public int getItemCount() {
-        List<Venue> venues = results.getVenues();
+        List<Venue> venues = results;
         if (venues != null) {
             return venues.size();
         } else {
@@ -76,21 +127,15 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
         }
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView suggestionName, suggestionHours, suggestionRating;
 
         ViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
             suggestionName = itemView.findViewById(R.id.suggestion_name);
             suggestionHours = itemView.findViewById(R.id.suggestion_hours);
             suggestionRating = itemView.findViewById(R.id.suggestion_rating);
-        }
-
-        @Override
-        public void onClick(View view) {
-            //do something
         }
     }
 }

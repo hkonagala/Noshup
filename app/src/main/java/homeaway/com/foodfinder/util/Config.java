@@ -12,6 +12,5 @@ public class Config {
 
     //shared preference keys
     public static final String APP_PREFERENCES = "preferences";
-    public static final String BOOKMARK_KEY = "isBookmarked";
-    public static final String BOOKMARKED_LIST = "bookmarksList";
+    public static final String FAVORITES_MAP = "favoritesMap";
 }
