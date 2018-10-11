@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +27,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.gson.Gson;
 
 import java.util.Optional;
 
@@ -321,18 +323,31 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
             Intent intent = new Intent(SearchActivity.this, DetailsActivity.class);
             Log.i("harika", "called intent");
             // Passes the extra venue details
+
+            Gson gson = new Gson();
+            String jsonFavorites = gson.toJson(venue);
+            intent.putExtra("venueJson", jsonFavorites);
             intent.putExtra("ID",venue.getId());
             intent.putExtra("name", venue.getName());
+
+            //icon
+            String url = venue.getCategories().get(0).getIcon().getPrefix();
+            if(url.contains("ss3.4sqi.net")){
+                url = url.replace("ss3.4sqi.net", "foursquare.com");
+                url = url + "64" + venue.getCategories().get(0).getIcon().getSuffix();
+            }
+            Uri uri = Uri.parse(url);
+            intent.putExtra("icon", uri);
             intent.putExtra("category", venue.getCategories().get(0).getName());
             //pass hours data if available
             intent.putExtra("openHourStatus",
                     Optional.ofNullable(venue.getHours())
-            .map(Hours::getStatus)
-            .orElse(null));
+                            .map(Hours::getStatus)
+                            .orElse(null));
             intent.putExtra("isOpenNow",
                     Optional.ofNullable(venue.getHours())
-            .map(Hours::getOpen)
-            .orElse(false));
+                            .map(Hours::getOpen)
+                            .orElse(false));
             //check for menu, if yes pass menu link
             intent.putExtra("hasMenu", venue.getHasMenu());
             intent.putExtra("menu", Optional.ofNullable(venue.getMenu())
@@ -345,26 +360,37 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
             intent.putExtra("url", venue.getUrl());
             //contact
             intent.putExtra("contact", Optional.ofNullable(venue.getContact())
-            .map(Contact::getFormattedPhone)
-            .orElse(null));
+                    .map(Contact::getFormattedPhone)
+                    .orElse(venue.getContact().getPhone()));
             //address
             intent.putExtra("address", venue.getLocation().getFormattedAddress().get(0) +
                     venue.getLocation().getFormattedAddress().get(1)); //full address
             //location for mapview
             intent.putExtra("latitude", Optional.ofNullable(venue.getLocation())
-            .map(Location::getLat)
-            .orElse(0d));
+                    .map(Location::getLat)
+                    .orElse(0d));
             intent.putExtra("longitude", Optional.ofNullable(venue.getLocation())
-            .map(Location::getLng)
-            .orElse(0d));
+                    .map(Location::getLng)
+                    .orElse(0d));
             //rating
             intent.putExtra("rating", venue.getRating());
             //rating color
             intent.putExtra("ratingcolor", venue.getRatingColor());
-            startActivity(intent);
+            startActivityForResult(intent, 0);
             Log.i("harika", "intent success");
         } else {
             Log.i("harika", "intent failed");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            if(data.getStringExtra("passed_item").equals("fromDetailsActivity")){
+                searchAdapter.notifyDataSetChanged();
+            }
+
         }
     }
 

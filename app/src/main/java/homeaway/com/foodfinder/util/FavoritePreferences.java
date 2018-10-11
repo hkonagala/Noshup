@@ -32,8 +32,8 @@ public class FavoritePreferences {
         SharedPreferences prefs = context.getSharedPreferences(Config.APP_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
-        String jsonFavoritess = gson.toJson(favorites);
-        editor.putString(Config.FAVORITES_MAP,jsonFavoritess);
+        String jsonFavorites = gson.toJson(favorites);
+        editor.putString(Config.FAVORITES_MAP,jsonFavorites);
         editor.apply();
     }
 
@@ -67,4 +67,15 @@ public class FavoritePreferences {
         }
     }
 
+    public void isFavorite(Context context, String id, boolean property) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Config.APP_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor edt = sharedPreferences.edit();
+        edt.putBoolean(id, property);
+        edt.apply();
+    }
+
+    public boolean hasFavorited(Context context, String id) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(Config.APP_PREFERENCES, Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(id, false);
+    }
 }

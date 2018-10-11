@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import homeaway.com.foodfinder.R;
+import homeaway.com.foodfinder.activity.DetailsActivity;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 import homeaway.com.foodfinder.util.DistanceUtil;
 import homeaway.com.foodfinder.util.FavoritePreferences;
@@ -164,7 +165,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 viewHolder.bookmark.setOnClickListener(null);
                 clickEvent(viewHolder);
 
-                if(checkBookmarks(venue)) {
+                if(/*checkBookmarks(venue) ||*/ preferences.hasFavorited(context, venue.getId())) {
                     viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
 //                    Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
                 } else {
@@ -284,7 +285,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             //getAdapterPosition returns the adapter position of the item in viewholder
             Venue venue = results.get(holder.getAdapterPosition());
 
-            if(!checkBookmarks(venue)) {
+            Log.i("details in adapter", String.valueOf(preferences.hasFavorited(context, venue.getId())));
+            if(!preferences.hasFavorited(context, venue.getId())) {
                 saveBookmark(holder, venue);
             } else {
                 deleteBookmark(holder, venue);
@@ -296,6 +298,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         preferences.addFavorites(context, venue);
         Log.i("harika", "bookmark added: " + results.get(holder.getAdapterPosition()).getName());
         holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+        preferences.isFavorite(context, results.get(holder.getAdapterPosition()).getId(), true);
         Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
     }
@@ -304,6 +307,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         preferences.removeFavorites(context, venue);
         Log.i("harika", "bookmark deleted: " + results.get(holder.getAdapterPosition()).getName());
         holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+        preferences.isFavorite(context, results.get(holder.getAdapterPosition()).getId(), false);
         Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
 
