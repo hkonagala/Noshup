@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,26 +19,26 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import homeaway.com.foodfinder.R;
-import homeaway.com.foodfinder.activity.DetailsActivity;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 import homeaway.com.foodfinder.util.DistanceUtil;
 import homeaway.com.foodfinder.util.FavoritePreferences;
 import homeaway.com.foodfinder.util.PaginationAdapterCallback;
 
+/**
+ * Adapter for recyclerview in search activity
+ */
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private static final String TAG = SearchAdapter.class.getSimpleName();
     // The application context for getting resources
     private Context context;
 
     // The list of results from the Foursquare API
-//    private Response results;
     private List<Venue> results;
 
     private OnItemClickedListener mItemClickListener = null;
@@ -55,9 +54,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private PaginationAdapterCallback mCallback;
     private String errorMsg;
 
-    public SearchAdapter(Context context/*, Response results*/) {
+    public SearchAdapter(Context context) {
         this.context = context;
-//        this.results = results;
         this.mCallback = (PaginationAdapterCallback) context;
         results = new ArrayList<>();
         preferences = FavoritePreferences.getFavoritePreferences();
@@ -82,7 +80,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             case ITEM:
                 viewHolder = getViewHolder(parent, inflater);
                 break;
-            case LOADING:
+            case LOADING: //for pagination
                 viewHolder = getLoadingHolder(parent, inflater);
                 break;
         }
@@ -125,7 +123,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     url = url + "64" + venue.getCategories().get(0).getIcon().getSuffix();
                 }
                 Uri uri = Uri.parse(url);
-//                Log.i("harika", uri.toString());
                 Picasso.with(context)
                         .load(uri)
                         .resize(80, 80)
@@ -144,8 +141,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 Location venueLocation = new Location("");
                 venueLocation.setLatitude(venue.getLocation().getLat());
                 venueLocation.setLongitude(venue.getLocation().getLng());
-//                Log.i("harika", "latitude: " + venueLocation.getLatitude() +
-//                        " longitude: " + venueLocation.getLongitude());
                 Location seattleCenter = new Location("");
                 seattleCenter.setLatitude(47.6062);
                 seattleCenter.setLongitude(-122.3321);
@@ -165,12 +160,10 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 viewHolder.bookmark.setOnClickListener(null);
                 clickEvent(viewHolder);
 
-                if(/*checkBookmarks(venue) ||*/ preferences.hasFavorited(context, venue.getId())) {
-                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
-//                    Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
+                if(preferences.hasFavorited(context, venue.getId())) {
+                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_white_24dp));
                 } else {
-                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
-//                    Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
+                    viewHolder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_white_24dp));
                 }
 
                 //additional venue details for the map
@@ -202,7 +195,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public int getItemCount() {
         List<Venue> venues = results;
         if (venues != null) {
-//            Log.i("harika", "size " + venues.size());
             return venues.size();
         } else {
             return 0;
@@ -224,7 +216,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         TextView category;
         TextView address;
         TextView distance;
-        ImageView bookmark;
+        ImageButton bookmark;
 
         //details for map
         String id;
@@ -269,7 +261,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             switch (view.getId()) {
                 case R.id.loadmore_retry:
                 case R.id.loadmore_errorlayout:
-
                     showRetry(false, null);
                     mCallback.retryPageLoad();
 
@@ -284,8 +275,6 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         holder.bookmark.setOnClickListener(view -> {
             //getAdapterPosition returns the adapter position of the item in viewholder
             Venue venue = results.get(holder.getAdapterPosition());
-
-            Log.i("details in adapter", String.valueOf(preferences.hasFavorited(context, venue.getId())));
             if(!preferences.hasFavorited(context, venue.getId())) {
                 saveBookmark(holder, venue);
             } else {
@@ -296,19 +285,17 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private void saveBookmark(ViewHolder holder, Venue venue) {
         preferences.addFavorites(context, venue);
-        Log.i("harika", "bookmark added: " + results.get(holder.getAdapterPosition()).getName());
-        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_black_24dp));
+        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_white_24dp));
         preferences.isFavorite(context, results.get(holder.getAdapterPosition()).getId(), true);
-        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, context.getString(R.string.add_favorite), Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
     }
 
     private void deleteBookmark(ViewHolder holder, Venue venue) {
         preferences.removeFavorites(context, venue);
-        Log.i("harika", "bookmark deleted: " + results.get(holder.getAdapterPosition()).getName());
-        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_black_24dp));
+        holder.bookmark.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_favorite_border_white_24dp));
         preferences.isFavorite(context, results.get(holder.getAdapterPosition()).getId(), false);
-        Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, context.getString(R.string.remove_favorite), Toast.LENGTH_SHORT).show();
         notifyDataSetChanged();
 
     }

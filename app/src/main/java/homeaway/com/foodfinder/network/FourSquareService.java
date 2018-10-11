@@ -1,6 +1,5 @@
 package homeaway.com.foodfinder.network;
 
-import homeaway.com.foodfinder.model.venueModel.Venue;
 import homeaway.com.foodfinder.model.venueModel.VenueDetails;
 import homeaway.com.foodfinder.model.venueModel.VenueResponse;
 import io.reactivex.Observable;

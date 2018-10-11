@@ -13,10 +13,12 @@
     <string name="hash_prefix">#</string>
     <string name="view_menu">View Menu</string>
     <string name="menu_unavailable">Menu Unavailable</string>
-    <string name="open_website">Website</string>
-    <string name="website_unavailable">Website Unavailable</string>
+    <string name="open_website">Open Website</string>
+    <string name="website_unavailable">Website Link Unavailable</string>
     <string name="no_rating">No Rating</string>
     <string name="no_contact">Contact Unavailable</string>
     <string name="address">Address:</string>
     <string name="contact">Phone:</string>
+    <string name="add_favorite">Added to favorites</string>
+    <string name="remove_favorite">Removed from favorites</string>
 </resources>

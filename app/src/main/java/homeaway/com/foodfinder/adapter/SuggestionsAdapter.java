@@ -4,7 +4,6 @@ package homeaway.com.foodfinder.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +19,9 @@ import java.util.List;
 import homeaway.com.foodfinder.R;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 
+/**
+ * Adapter for search suggestions
+ */
 public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.ViewHolder> {
 
     // The application context for getting resources
@@ -36,9 +38,8 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
     private OnItemClickListener mItemsOnClickListener;
     private int mLastAnimatedItemPosition = -1;
 
-    public SuggestionsAdapter(Context context/*, Response results*/) {
+    public SuggestionsAdapter(Context context) {
         this.context = context;
-//        this.results = results;
         results = new ArrayList<>();
     }
 
@@ -69,28 +70,6 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
         Venue venue = results.get(position);
 
         holder.suggestionName.setText(venue.getCategories().get(position).getName());
-//        if(venue.getHours().getIsOpen()){
-//            holder.suggestionHours.setText(context.getResources().getString(R.string.open_now));
-//        } else {
-//            holder.suggestionHours.setText(context.getResources().getString(R.string.closed));
-//        }
-//
-//        double ratingColor = Double.parseDouble(venue.getRatingColor());
-//        if (ratingColor >= 9.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Kale));
-//        } else if (ratingColor >= 8.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Guacamole));
-//        } else if (ratingColor >= 7.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Lime));
-//        } else if (ratingColor >= 6.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Banana));
-//        } else if (ratingColor >= 5.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Orange));
-//        } else if (ratingColor >= 4.0) {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.MacCheese));
-//        } else {
-//            holder.suggestionRating.setTextColor(ContextCompat.getColor(context, R.color.Strawberry));
-//        }
 
         if(mLastAnimatedItemPosition < position){
             animateItem(holder.itemView);
@@ -98,12 +77,7 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
         }
 
         if(mItemsOnClickListener != null){
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mItemsOnClickListener.onClick(venue);
-                }
-            });
+            holder.itemView.setOnClickListener(v -> mItemsOnClickListener.onClick(venue));
         }
     }
 
@@ -128,13 +102,11 @@ public class SuggestionsAdapter extends RecyclerView.Adapter<SuggestionsAdapter.
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView suggestionName/*, suggestionHours, suggestionRating*/;
+        TextView suggestionName;
 
         ViewHolder(View itemView) {
             super(itemView);
             suggestionName = itemView.findViewById(R.id.suggestion_name);
-//            suggestionHours = itemView.findViewById(R.id.suggestion_hours);
-//            suggestionRating = itemView.findViewById(R.id.suggestion_rating);
         }
     }
 }

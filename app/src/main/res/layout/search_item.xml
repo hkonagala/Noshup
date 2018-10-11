@@ -9,7 +9,7 @@
     app:cardCornerRadius="4dp"
     app:cardUseCompatPadding="true"
     app:cardPreventCornerOverlap="false"
-    android:background="?selectableItemBackground">
+    android:foreground="?selectableItemBackground">
 
     <RelativeLayout
         android:id="@+id/search_item_container"
@@ -34,7 +34,7 @@
             android:layout_alignTop="@id/search_icon"
             android:layout_marginTop="@dimen/search_view_inset"
             android:layout_marginLeft="@dimen/search_view_inset"
-            android:textColor="@color/colorAccent"
+            android:textColor="@color/colorPrimaryDark"
             android:textSize="@dimen/text_content_margin"
             android:textStyle="bold"/>
 
@@ -61,16 +61,19 @@
             android:textSize="12dp"/>
 
 
-        <ImageView
+        <ImageButton
             android:id="@+id/search_bookmark"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:padding="4dp"
+            android:background="@color/transparent"
+            android:foreground="?attr/selectableItemBackground"
             android:layout_marginRight="@dimen/search_view_inset"
             android:layout_marginTop="@dimen/search_view_inset"
-            android:src="@drawable/ic_favorite_border_black_24dp"/>
+            android:src="@drawable/ic_favorite_border_white_24dp"
+            android:tint="@color/colorAccent"/>
 
         <TextView
             android:id="@+id/search_distance"

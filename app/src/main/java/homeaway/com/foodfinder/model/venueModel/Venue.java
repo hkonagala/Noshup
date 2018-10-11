@@ -5,8 +5,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import homeaway.com.foodfinder.model.exploreModel.Hours;
-
 public class Venue {
 
     @SerializedName("id")

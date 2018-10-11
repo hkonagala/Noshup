@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+/**
+ * Helper class for getting current date
+ */
 public class DateUtil {
 
     public static String getTodaysDate() {

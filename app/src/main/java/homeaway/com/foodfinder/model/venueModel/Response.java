@@ -5,6 +5,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+/**
+ * API call for list of venues
+ */
 public class Response {
 
     @SerializedName("venues")

@@ -2,11 +2,13 @@ package homeaway.com.foodfinder.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import homeaway.com.foodfinder.SearchActivity;
 
+/**
+ * splash screen before the activity launch
+ */
 public class SplashActivity extends AppCompatActivity {
 
     @Override

@@ -13,6 +13,9 @@ import java.util.Map;
 
 import homeaway.com.foodfinder.model.venueModel.Venue;
 
+/**
+ * Helper class for storing and retrieving shared preferences
+ */
 public class FavoritePreferences {
 
     private static FavoritePreferences favoritePreferences;
@@ -67,6 +70,7 @@ public class FavoritePreferences {
         }
     }
 
+    //adds a boolean tag for checked and unchecked venues
     public void isFavorite(Context context, String id, boolean property) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Config.APP_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor edt = sharedPreferences.edit();
@@ -74,6 +78,7 @@ public class FavoritePreferences {
         edt.apply();
     }
 
+    //returns if a venue is bookmarked or not
     public boolean hasFavorited(Context context, String id) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(Config.APP_PREFERENCES, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(id, false);

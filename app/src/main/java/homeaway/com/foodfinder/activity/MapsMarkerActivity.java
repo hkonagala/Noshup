@@ -1,65 +1,63 @@
 package homeaway.com.foodfinder.activity;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.PlaceDetectionClient;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import homeaway.com.foodfinder.R;
 import homeaway.com.foodfinder.model.venueModel.Venue;
 
+/**
+ * An activity to display a map with all the venues listed
+ */
 public class MapsMarkerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    List<Venue> markers = new ArrayList<>();
-
+    List<Venue> venueList;
     private GoogleMap mMap;
-    private CameraPosition mCameraPosition;
+    private Marker previousMarker = null;
 
-    // The entry points to the Places API.
-    private GeoDataClient mGeoDataClient;
-    private PlaceDetectionClient mPlaceDetectionClient;
-
-    // The entry point to the Fused Location Provider.
-    private FusedLocationProviderClient mFusedLocationProviderClient;
-
-    // A default location (Sydney, Australia) and default zoom to use when location permission is
-    // not granted.
+    //seattle center
     private final LatLng mDefaultLocation = new LatLng(47.6062, -122.3321);
     private static final int DEFAULT_ZOOM = 15;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private boolean mLocationPermissionGranted;
 
-    // Keys for storing activity state.
-    private static final String KEY_CAMERA_POSITION = "camera_position";
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_marker);
 
-        // Construct a GeoDataClient.
-        mGeoDataClient = Places.getGeoDataClient(this, null);
+        toolbar = findViewById(R.id.map_toolbar);
+        setSupportActionBar(toolbar);
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
 
-        // Construct a PlaceDetectionClient.
-        mPlaceDetectionClient = Places.getPlaceDetectionClient(this, null);
-
-        // Construct a FusedLocationProviderClient.
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        //intent from search activity
+        Intent intent = getIntent();
+        String list = intent.getStringExtra("venueListJson");
+        //convert json string to venue list
+        Gson gson = new Gson();
+        java.lang.reflect.Type type = new TypeToken<List<Venue>>(){}.getType();
+        venueList = gson.fromJson(list, type);
 
         // Get the SupportMapFragment and request notification
         // when the map is ready to be used.
@@ -68,47 +66,67 @@ public class MapsMarkerActivity extends AppCompatActivity implements OnMapReadyC
         mapFragment.getMapAsync(this);
     }
 
-    /**
-     * Saves the state of the map when the activity is paused.
-     */
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        if (mMap != null) {
-            outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
-            super.onSaveInstanceState(outState);
-        }
-    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
 
-
-        for(int i =0; i < markers.size(); i++) {
-            String icon = markers.get(i).getCategories().get(i).getIcon().getPrefix();
-            if(icon.contains("ss3.4sqi.net")){
-                icon = icon.replace("ss3.4sqi.net", "foursquare.com");
-                icon = icon + "64" + markers.get(i).getCategories().get(0).getIcon().getSuffix();
-            }
-            createMarkerForEach(googleMap,
-                    markers.get(i).getLocation().getLat(),
-                    markers.get(i).getLocation().getLng(),
-                    markers.get(i).getName(),
-                    icon);
+        if(mMap == null){
+            return;
         }
-        LatLng seattleCenter = new LatLng(47.6062, -122.3321);
-        googleMap.addMarker(new MarkerOptions().position(seattleCenter)
-                .title("Marker in Seattle"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(seattleCenter));
-        googleMap.setMaxZoomPreference(15);
+        if(venueList == null || venueList.isEmpty()) {
+            //do something
+        }
+
+        for (int i = 0; i < venueList.size(); i++) {
+            Venue venue = venueList.get(i);
+            LatLng position = new LatLng(venue.getLocation().getLat(), venue.getLocation().getLng());
+
+            String venueId = venue.getId();
+            String venueName = venue.getName();
+            //icon
+            String url = venue.getCategories().get(0).getIcon().getPrefix();
+            if(url.contains("ss3.4sqi.net")){
+                url = url.replace("ss3.4sqi.net", "foursquare.com");
+                url = url + "bg_64" + venue.getCategories().get(0).getIcon().getSuffix();
+            }
+            Uri uri = Uri.parse(url);
+
+
+            MarkerOptions markerOptions = new MarkerOptions();
+            mMap.addMarker(markerOptions.position(position)).setTitle(venueName);
+
+            if (i == 0) {
+                CameraPosition camPos = new CameraPosition(position, DEFAULT_ZOOM, 0, 0);
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(camPos));
+            }
+        }
+
+        UiSettings uiSettings = mMap.getUiSettings();
+        uiSettings.setMapToolbarEnabled(false);
+        uiSettings.setMyLocationButtonEnabled(false);
+        uiSettings.setCompassEnabled(false);
+        uiSettings.setRotateGesturesEnabled(false);
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                String localAddress = marker.getTitle();
+
+                if (previousMarker != null) {
+                    previousMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                }
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                previousMarker = marker;
+                return true;
+            }
+        });
     }
 
-    private void createMarkerForEach(GoogleMap googleMap, Double lat, Double lng, String name, String icon) {
-        googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(lat, lng))
-                .anchor(0.5f, 0.5f)
-                .title(name)
-                .icon(BitmapDescriptorFactory.fromPath(icon)));
+    //toolbar back button navigation
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
-
-
 }

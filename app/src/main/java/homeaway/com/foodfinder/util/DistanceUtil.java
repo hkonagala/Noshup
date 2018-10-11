@@ -1,5 +1,8 @@
 package homeaway.com.foodfinder.util;
 
+/**
+ * Helper class for calculating distance between two geo points and convert to miles
+ */
 public class DistanceUtil {
 
     public static double distance(double lat1, double lon1, double lat2, double lon2) {

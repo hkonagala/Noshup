@@ -3,8 +3,9 @@ package homeaway.com.foodfinder.model.venueModel;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
+/**
+ * API call for a single venue item
+ */
 public class SingleVenueResponse {
 
     @SerializedName("venue")
