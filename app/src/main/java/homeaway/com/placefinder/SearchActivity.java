@@ -280,7 +280,7 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
         emptyView.clearAnimation();
 //        recyclerView.setVisibility(View.VISIBLE);
         fab.setVisibility(View.VISIBLE);
-        searchView.setText("");
+//        searchView.setText("");
 
         String searchString = Config.QUERY;
         AtomicReference<String> atomicString = new AtomicReference<>();
