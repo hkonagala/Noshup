@@ -542,9 +542,9 @@ public class SearchActivity extends AppCompatActivity implements PaginationAdapt
             if (isNotBlank(category.getName())) {
                 suggestionsStrings.add(category.getName());
             }
-            if (isNotBlank(category.getShortName())) {
-                suggestionsStrings.add(category.getShortName());
-            }
+//            if (isNotBlank(category.getShortName())) {
+//                suggestionsStrings.add(category.getShortName());
+//            }
             if (isNotEmpty(category.getCategories())) {
                 parseCategories(suggestionsStrings, category.getCategories());
             }
