@@ -2,12 +2,12 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:drawable="@color/colorPrimary"/>
+        android:drawable="@color/white"/>
 
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/if_food_dome_379338"/>
+            android:src="@drawable/if_15_place_optimization_1688864"/>
     </item>
 
 </layer-list>

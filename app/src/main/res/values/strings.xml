@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Nosh Up</string>
-    <string name="search_restaurants">Search Restaurants</string>
-    <string name="server_error">Noshup cannot connect to Foursquare\'s servers!</string>
+    <string name="app_name">Place Finder</string>
+    <string name="search_restaurants">Search Seattle</string>
+    <string name="server_error">Place finder cannot connect to Foursquare\'s servers!</string>
     <string name="loading_message">Loading Data.. Please wait…</string>
     <string name="miles">m</string>
     <string name="open_now">Open Now</string>

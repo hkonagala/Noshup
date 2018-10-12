@@ -2,8 +2,9 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
+    buildToolsVersion "28.0.2"
     defaultConfig {
-        applicationId "homeaway.com.foodfinder"
+        applicationId "homeaway.com.placefinder"
         minSdkVersion 16
         targetSdkVersion 27
         multiDexEnabled true
@@ -61,6 +62,13 @@ dependencies {
 
     //google play service
     implementation 'com.google.android.gms:play-services:12.0.1'
+
+//    compileOnly 'org.projectlombok:lombok:1.18.2'
+//    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+
+//    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+//    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+
 
 }
 
